@@ -1,13 +1,10 @@
 namespace DiffLib2.Tests;
 
-public class Tests
+public class DiffTests
 {
-    [SetUp]
-    public void Setup() { }
-
     [Test]
-    public void Test1()
+    public void Segment_TwoEmptyRanges_ReturnsEmptyResult()
     {
-        Assert.Pass();
+        Diff.Segments<byte>(Array.Empty<byte>(), Array.Empty<byte>());
     }
 }
