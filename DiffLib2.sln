@@ -8,6 +8,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "@documents", "@documents", "{864451A9-F1F3-4B50-A461-37E6F0C8FD7B}"
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
+		LICENSE.md = LICENSE.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "@configuration", "@configuration", "{FDF4A2A9-A07F-4116-ADEB-B1EE7276EC4E}"
