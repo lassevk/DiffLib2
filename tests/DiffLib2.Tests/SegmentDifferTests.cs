@@ -61,4 +61,54 @@ public class SegmentDifferTests
 
         Assert.That(output, Is.False);
     }
+
+    [Test]
+    public void NextSegment_StringsAreEqual_ReturnsSegment()
+    {
+        SegmentDiffer<char> differ = Create("abc", "abc");
+
+        bool output = differ.NextSegment(out DiffSegment<char> segment);
+
+        Assert.That(output, Is.True);
+        Assert.That(segment.Left.ToString(), Is.EqualTo("abc"));
+        Assert.That(segment.Right.ToString(), Is.EqualTo("abc"));
+    }
+
+    [Test]
+    public void NextSegment_StringsAreEqual_ReturnsOnlyOneSegment()
+    {
+        SegmentDiffer<char> differ = Create("abc", "abc");
+
+        bool _ = differ.NextSegment(out DiffSegment<char> _);
+        bool output = differ.NextSegment(out DiffSegment<char> _);
+
+        Assert.That(output, Is.False);
+    }
+
+    [Test]
+    public void NextSegment_DifferentSegmentInTheMiddle_ReturnsCorrectSegments()
+    {
+        SegmentDiffer<char> differ = Create("abc123xyz", "abc456xyz");
+
+        bool output = differ.NextSegment(out DiffSegment<char> segment);
+        Assert.That(output, Is.True);
+        Assert.That(segment.Left.ToString(), Is.EqualTo("abc"));
+        Assert.That(segment.Right.ToString(), Is.EqualTo("abc"));
+        Assert.That(segment.IsMatch, Is.True);
+
+        output = differ.NextSegment(out segment);
+        Assert.That(output, Is.True);
+        Assert.That(segment.Left.ToString(), Is.EqualTo("123"));
+        Assert.That(segment.Right.ToString(), Is.EqualTo("456"));
+        Assert.That(segment.IsMatch, Is.False);
+
+        output = differ.NextSegment(out segment);
+        Assert.That(output, Is.True);
+        Assert.That(segment.Left.ToString(), Is.EqualTo("xyz"));
+        Assert.That(segment.Right.ToString(), Is.EqualTo("xyz"));
+        Assert.That(segment.IsMatch, Is.True);
+
+        output = differ.NextSegment(out segment);
+        Assert.That(output, Is.False);
+    }
 }
