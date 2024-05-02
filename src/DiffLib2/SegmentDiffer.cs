@@ -6,6 +6,12 @@ public ref struct SegmentDiffer<T>
     private ReadOnlySpan<T> _right;
     private readonly IEqualityComparer<T> _comparer;
 
+    private int?[]? _leftHashCodes;
+    private int _leftHashCodesOffset;
+
+    private int?[]? _rightHashCodes;
+    private int _rightHashCodesOffset;
+
     public SegmentDiffer(ReadOnlySpan<T> left, ReadOnlySpan<T> right, IEqualityComparer<T> comparer)
     {
         _left = left;
@@ -42,6 +48,9 @@ public ref struct SegmentDiffer<T>
         {
             for (int rightOffset = rightStart; rightOffset < rightEnd; rightOffset++)
             {
+                if (LeftHashCode(leftOffset) != RightHashCode(rightOffset))
+                    continue;
+
                 if (!_comparer.Equals(_left[leftOffset], _right[rightOffset]))
                     continue;
 
@@ -49,6 +58,9 @@ public ref struct SegmentDiffer<T>
                 int maxPossibleLength = Math.Min(leftEnd - leftStart - leftOffset, rightEnd - rightStart - rightOffset);
                 while (length < maxPossibleLength)
                 {
+                    if (LeftHashCode(leftOffset + length) != RightHashCode(rightOffset + length))
+                        break;
+
                     if (!_comparer.Equals(_left[leftOffset + length], _right[rightOffset + length]))
                         break;
 
@@ -67,25 +79,28 @@ public ref struct SegmentDiffer<T>
         if (longestLength == 0)
         {
             segment = new DiffSegment<T>(_left[leftStart .. leftEnd], _right[rightStart .. rightEnd], false);
-            Advance(leftEnd - leftStart, rightEnd - rightStart);
+            Advance(segment.Left.Length, segment.Right.Length);
             return true;
         }
 
         if (longestLeftStart == 0 && longestRightStart == 0)
         {
             segment = new DiffSegment<T>(_left[..longestLength], _right[..longestLength], true);
+            Advance(segment.Left.Length, segment.Right.Length);
             return true;
         }
 
         if (longestLeftStart == 0)
         {
             segment = new DiffSegment<T>(_left[..0], _right[..longestRightStart], false);
+            Advance(segment.Left.Length, segment.Right.Length);
             return true;
         }
 
         if (longestRightStart == 0)
         {
             segment = new DiffSegment<T>(_left[..longestLeftStart], _right[..0], false);
+            Advance(segment.Left.Length, segment.Right.Length);
             return true;
         }
 
@@ -98,7 +113,7 @@ public ref struct SegmentDiffer<T>
         if (match > 0)
         {
             segment = new DiffSegment<T>(_left[..match], _right[..match], true);
-            Advance(match);
+            Advance(segment.Left.Length, segment.Right.Length);
             return true;
         }
 
@@ -111,7 +126,7 @@ public ref struct SegmentDiffer<T>
         if (_left.Length == 0 || _right.Length == 0)
         {
             segment = new DiffSegment<T>(_left, _right, false);
-            Advance(_left.Length, _right.Length);
+            Advance(segment.Left.Length, segment.Right.Length);
             return true;
         }
 
@@ -125,11 +140,13 @@ public ref struct SegmentDiffer<T>
         return _left.Length == 0 && _right.Length == 0;
     }
 
-    private void Advance(int length) => Advance(length, length);
     private void Advance(int leftLength, int rightLength)
     {
-        _left = _left[leftLength..];
-        _right = _right[rightLength..];
+        _left = _left[leftLength ..];
+        _right = _right[rightLength ..];
+
+        _leftHashCodesOffset += leftLength;
+        _rightHashCodesOffset += rightLength;
     }
 
     private int Match()
@@ -142,5 +159,27 @@ public ref struct SegmentDiffer<T>
             if (!_comparer.Equals(_left[index], _right[index]))
                 return index;
         }
+    }
+
+    private int LeftHashCode(int offset)
+    {
+        if (_leftHashCodes is null)
+        {
+            _leftHashCodes = new int?[_left.Length];
+            _leftHashCodesOffset = 0;
+        }
+
+        return _leftHashCodes[_leftHashCodesOffset + offset] ??= _left[offset]?.GetHashCode() ?? 0;
+    }
+
+    private int RightHashCode(int offset)
+    {
+        if (_rightHashCodes is null)
+        {
+            _rightHashCodes = new int?[_right.Length];
+            _rightHashCodesOffset = 0;
+        }
+
+        return _rightHashCodes[_rightHashCodesOffset + offset] ??= _right[offset]?.GetHashCode() ?? 0;
     }
 }

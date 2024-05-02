@@ -9,3 +9,13 @@ This is intended to be a new major release of [DiffLib](https://github.com/lasse
 written in .NET 8, C# 12, with major performance improvements, based on new
 types, such as `Span<T>` and similar.
  
+
+Status
+---
+
+Current status of project is "on hold". `(ReadOnly)Span<T>` is severly limited when dealing with recursive algorithms,
+as there is no way to cache intermediate results.
+
+A recursive enumerator can easily keep state like this, but since the entire stack unwinds and all local spans are
+discarded, and cannot be temporarily stored between invocations, it seems I need a completely new way to think about
+this recursive algorithm for this to work.
