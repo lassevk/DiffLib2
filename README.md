@@ -13,7 +13,7 @@ types, such as `Span<T>` and similar.
 Status
 ---
 
-Current status of project is "on hold". `(ReadOnly)Span<T>` is severly limited when dealing with recursive algorithms,
+Current status of project is "on hold". `(ReadOnly)Span<T>` is severely limited when dealing with recursive algorithms,
 as there is no way to cache intermediate results.
 
 A recursive enumerator can easily keep state like this, but since the entire stack unwinds and all local spans are
